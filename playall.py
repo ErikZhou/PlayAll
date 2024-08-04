@@ -2,7 +2,7 @@ import sys
 import os
 import json
 from PyQt5.QtWidgets import (QApplication, QWidget, QPushButton, QFileDialog, QVBoxLayout, QHBoxLayout, 
-                             QSlider, QLabel, QComboBox, QMainWindow, QAction, QStyle, QMessageBox)
+                             QSlider, QLabel, QComboBox, QMainWindow, QAction, QStyle, QMessageBox, QSizePolicy)
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 from PyQt5.QtMultimediaWidgets import QVideoWidget
 from PyQt5.QtCore import Qt, QUrl, QTime, QTimer
@@ -32,67 +32,28 @@ class VideoPlayer(QMainWindow):
         self.is_closing = False
         self.show_remaining_time = False
 
-    def init_ui(self):
+
         main_layout = QVBoxLayout()
-        main_layout.setSpacing(6)
-        main_layout.setContentsMargins(11, 11, 11, 11)
+        main_layout.setSpacing(0)
+        main_layout.setContentsMargins(0, 0, 0, 0)
 
         # Video display area
         self.video_widget = QVideoWidget()
         main_layout.addWidget(self.video_widget)
 
-        # Audio label
-        self.audio_label = QLabel("Audio Playback")
-        self.audio_label.setAlignment(Qt.AlignCenter)
-        self.audio_label.setStyleSheet("font-size: 26px; color: #888;")
-        self.audio_label.setVisible(False)
-        main_layout.addWidget(self.audio_label)
-
-        # Progress slider
-        self.progress_slider = QSlider(Qt.Horizontal)
-        self.progress_slider.setFixedHeight(17)
-        self.progress_slider.sliderMoved.connect(self.set_position)
-        main_layout.addWidget(self.progress_slider)
-
-        # Time labels
-        time_layout = QHBoxLayout()
-        time_layout.setContentsMargins(0, 0, 0, 0)
-        time_layout.setSpacing(0)
-
-        self.current_time_label = QLabel("00:00:00")
-        self.total_time_label = QLabel("00:00:00")
-        self.total_time_label.mousePressEvent = self.toggle_time_display
-
-        label_style = """
-            QLabel {
-                font-size: 11px;
-                min-height: 13px;
-                max-height: 13px;
-            }
-        """
-        self.current_time_label.setStyleSheet(label_style)
-        self.total_time_label.setStyleSheet(label_style)
-
-        time_layout.addWidget(self.current_time_label)
-        time_layout.addStretch()
-        time_layout.addWidget(self.total_time_label)
-
-        time_container = QWidget()
-        time_container.setLayout(time_layout)
-        time_container.setFixedHeight(17)
-
-        main_layout.addWidget(time_container)
-
-        # Control buttons
+        # Control layout (all controls in one line)
         control_layout = QHBoxLayout()
-        control_layout.setContentsMargins(0, 0, 0, 0)
-        control_layout.setSpacing(11)
+        control_layout.setContentsMargins(5, 0, 5, 0)
+        control_layout.setSpacing(5)
 
         button_style = """
             QPushButton {
-                min-height: 22px;
-                max-height: 22px;
-                padding: 0px 11px;
+                min-width: 25px;
+                max-width: 25px;
+                min-height: 25px;
+                max-height: 25px;
+                padding: 0px;
+                font-size: 10px;
             }
         """
 
@@ -117,54 +78,168 @@ class VideoPlayer(QMainWindow):
         control_layout.addWidget(self.forward_button)
         control_layout.addWidget(self.stop_button)
 
-        # Volume and Speed controls
-        volume_speed_layout = QHBoxLayout()
-        volume_speed_layout.setContentsMargins(0, 0, 0, 0)
-        volume_speed_layout.setSpacing(11)
+        # Progress slider
+        self.progress_slider = QSlider(Qt.Horizontal)
+        self.progress_slider.setFixedHeight(15)
+        self.progress_slider.sliderMoved.connect(self.set_position)
+        control_layout.addWidget(self.progress_slider, 1)  # Give it more space in the layout
+
+        # Time labels
+        #self.current_time_label = QLabel("00:00:00")
+        #self.current_time_label.setFixedWidth(50)
+        self.total_time_label = QLabel("00:00:00")
+        self.total_time_label.setFixedWidth(50)
+        self.total_time_label.mousePressEvent = self.toggle_time_display
+        #control_layout.addWidget(self.current_time_label)
+        control_layout.addWidget(self.total_time_label)
+
 
         # Volume control
-        volume_layout = QHBoxLayout()
-        volume_layout.setSpacing(5)
         volume_label = QLabel("Volume:")
-        volume_label.setFixedWidth(50)
+        volume_label.setFixedWidth(45)
         self.volume_slider = QSlider(Qt.Horizontal)
         self.volume_slider.setRange(0, 100)
         self.volume_slider.setValue(50)
-        self.volume_slider.setFixedWidth(80)
-        self.volume_slider.setFixedHeight(17)
+        self.volume_slider.setFixedWidth(60)
+        self.volume_slider.setFixedHeight(15)
         self.volume_slider.valueChanged.connect(self.set_volume)
         
         self.volume_value_label = QLabel("50%")
-        self.volume_value_label.setFixedWidth(35)
+        self.volume_value_label.setFixedWidth(30)
         
-        volume_layout.addWidget(volume_label)
-        volume_layout.addWidget(self.volume_slider)
-        volume_layout.addWidget(self.volume_value_label)
+        control_layout.addWidget(volume_label)
+        control_layout.addWidget(self.volume_slider)
+        control_layout.addWidget(self.volume_value_label)
 
-        volume_speed_layout.addLayout(volume_layout)
+
 
         # Playback speed control
-        speed_layout = QHBoxLayout()
-        speed_layout.setSpacing(5)
         speed_label = QLabel("Speed:")
-        speed_label.setFixedWidth(50)
+        speed_label.setFixedWidth(40)
         self.speed_combo = QComboBox()
-        self.speed_combo.setFixedHeight(22)
-        self.speed_combo.setFixedWidth(70)
+        self.speed_combo.setFixedWidth(50)
+        self.speed_combo.setFixedHeight(20)
         speeds = ["0.5x", "0.75x", "0.85x", "1.0x", "1.25x", "1.5x", "1.75x", "2.0x"]
         self.speed_combo.addItems(speeds)
         self.speed_combo.setCurrentText("1.0x")
         self.speed_combo.currentTextChanged.connect(self.set_playback_speed)
         
-        speed_layout.addWidget(speed_label)
-        speed_layout.addWidget(self.speed_combo)
+        control_layout.addWidget(speed_label)
+        control_layout.addWidget(self.speed_combo)
+
+
+
+        # Wrap control layout in a widget to set fixed height
+        control_widget = QWidget()
+        control_widget.setLayout(control_layout)
+        control_widget.setFixedHeight(30)  # Set the height of the control bar
+
+        # Add control widget to main layout
+        main_layout.addWidget(control_widget)
+
+        self.central_widget.setLayout(main_layout)
+
+    def init_ui(self):
+        main_layout = QVBoxLayout()
+        main_layout.setSpacing(0)
+        main_layout.setContentsMargins(0, 0, 0, 0)
+
+        # Video display area
+        self.video_widget = QVideoWidget()
+        main_layout.addWidget(self.video_widget)
+
+        # Control layout (all controls in one line)
+        control_layout = QHBoxLayout()
+        control_layout.setContentsMargins(5, 0, 5, 0)
+        control_layout.setSpacing(5)
+
+        button_style = """
+            QPushButton {
+                min-width: 30px;
+                max-width: 30px;
+                min-height: 25px;
+                max-height: 25px;
+                padding: 0px;
+                font-size: 10px;
+            }
+        """
+
+        self.backward_button = QPushButton('<<')
+        self.backward_button.clicked.connect(self.backward)
+        self.backward_button.setStyleSheet(button_style)
+
+        self.play_button = QPushButton('Play')
+        self.play_button.clicked.connect(self.play_pause_video)
+        self.play_button.setStyleSheet(button_style)
+
+        self.forward_button = QPushButton('>>')
+        self.forward_button.clicked.connect(self.forward)
+        self.forward_button.setStyleSheet(button_style)
+
+        self.stop_button = QPushButton('Stop')
+        self.stop_button.clicked.connect(self.stop_video)
+        self.stop_button.setStyleSheet(button_style)
+
+        control_layout.addWidget(self.backward_button)
+        control_layout.addWidget(self.play_button)
+        control_layout.addWidget(self.forward_button)
+        control_layout.addWidget(self.stop_button)
+
+        # Progress slider
+        self.progress_slider = QSlider(Qt.Horizontal)
+        self.progress_slider.setFixedHeight(15)
+        self.progress_slider.setMinimumWidth(80)
+        self.progress_slider.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        self.progress_slider.sliderMoved.connect(self.set_position)
+        control_layout.addWidget(self.progress_slider, 9)  # Reduced stretch factor from 10 to 9
+
+        # Time labels
+        self.total_time_label = QLabel("00:00:00")
+        self.total_time_label.setMaximumWidth(60)
+        self.total_time_label.mousePressEvent = self.toggle_time_display
+
+        control_layout.addWidget(self.total_time_label)
+
+        # Volume control
+        volume_label = QLabel("Vol:")
+        volume_label.setFixedWidth(25)
+        self.volume_slider = QSlider(Qt.Horizontal)
+        self.volume_slider.setRange(0, 100)
+        self.volume_slider.setValue(50)
+        self.volume_slider.setFixedWidth(80)
+        self.volume_slider.setFixedHeight(15)
+        self.volume_slider.valueChanged.connect(self.set_volume)
         
-        volume_speed_layout.addLayout(speed_layout)
-        volume_speed_layout.addStretch(1)
+        self.volume_value_label = QLabel("50%")
+        self.volume_value_label.setFixedWidth(30)
+        
+        control_layout.addWidget(volume_label)
+        control_layout.addWidget(self.volume_slider)
+        control_layout.addWidget(self.volume_value_label)
 
-        control_layout.addLayout(volume_speed_layout)
+        # Playback speed control
+        speed_label = QLabel("X:")
+        speed_label.setFixedWidth(15)
+        self.speed_combo = QComboBox()
+        self.speed_combo.setFixedWidth(70)
+        self.speed_combo.setFixedHeight(20)
+        speeds = ["0.5x", "0.75x", "0.85x", "1.0x", "1.25x", "1.5x", "1.75x", "2.0x"]
+        self.speed_combo.addItems(speeds)
+        self.speed_combo.setCurrentText("1.0x")
+        self.speed_combo.currentTextChanged.connect(self.set_playback_speed)
+        
+        control_layout.addWidget(speed_label)
+        control_layout.addWidget(self.speed_combo)
 
-        main_layout.addLayout(control_layout)
+
+
+        # Wrap control layout in a widget to set fixed height
+        control_widget = QWidget()
+        control_widget.setLayout(control_layout)
+        control_widget.setFixedHeight(30)  # Set the height of the control bar
+
+        # Add control widget to main layout
+        main_layout.addWidget(control_widget)
 
         self.central_widget.setLayout(main_layout)
 
@@ -217,13 +292,18 @@ class VideoPlayer(QMainWindow):
         
         self.is_audio = self.media_player.isAudioAvailable() and not self.media_player.isVideoAvailable()
         self.video_widget.setVisible(not self.is_audio)
-        self.audio_label.setVisible(self.is_audio)
 
     def stop_video(self):
         self.media_player.stop()
         if self.current_file:
             self.last_positions[self.current_file] = self.media_player.position()
             self.save_positions()
+
+    def backward(self):
+        self.media_player.setPosition(max(0, self.media_player.position() - 5000))
+
+    def forward(self):
+        self.media_player.setPosition(min(self.media_player.duration(), self.media_player.position() + 5000))
 
     def closeEvent(self, event):
         if not self.is_closing:
@@ -271,8 +351,6 @@ class VideoPlayer(QMainWindow):
         self.volume_value_label.setText(f"{volume}%")
 
     def update_current_time(self, position):
-        current_time = QTime(0, 0, 0).addMSecs(position)
-        self.current_time_label.setText(current_time.toString("hh:mm:ss"))
         
         if self.show_remaining_time:
             remaining = self.media_player.duration() - position
@@ -304,12 +382,6 @@ class VideoPlayer(QMainWindow):
             self.adjust_volume(-5)
         else:
             super().keyPressEvent(event)
-
-    def backward(self):
-        self.media_player.setPosition(max(0, self.media_player.position() - 2000))
-
-    def forward(self):
-        self.media_player.setPosition(min(self.media_player.duration(), self.media_player.position() + 2000))
 
     def set_playback_speed(self, speed_text):
         speed = float(speed_text[:-1])

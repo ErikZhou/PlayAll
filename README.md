@@ -15,11 +15,10 @@ A simple, feature-rich media player built with Python and PyQt5.
 
 ## Requirements
 
-python3 -m venv playall  
-source playall/bin/activate
-pip install -r requirements.txt
-
-
+- python3 -m venv .venv_playall 
+- source .venv_playall/bin/activate
+- pip install -r requirements.txt
+- 
 - Python 3.6+
 - PyQt5
 - PyQt5-multimediawidgets
@@ -30,16 +29,17 @@ pip install -r requirements.txt
 2. Clone this repository:
    git clone https://github.com/ErikZhou/PlayAll.git
 3. Navigate to the project directory:
-   cd mp4player
+   cd PlayAll
 4. Install the required dependencies:
    pip install PyQt5 PyQt5-multimediawidgets
+5. pyinstaller --onefile --windowed --icon=PlayAll.icns PlayAll.py
 ## Usage
 
 To run the Play All:
 
 1. Navigate to the project directory in your terminal.
 2. Run the following command:
-   python mp4player.py
+   python playall.py
 ### Opening a Video
 
 - Click on "File" in the menu bar and select "Open", or use the keyboard shortcut Ctrl+O (Cmd+O on macOS).
