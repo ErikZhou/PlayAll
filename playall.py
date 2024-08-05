@@ -85,8 +85,8 @@ class VideoPlayer(QMainWindow):
         control_layout.addWidget(self.progress_slider, 1)  # Give it more space in the layout
 
         # Volume control
-        volume_label = QLabel("Volume:")
-        volume_label.setFixedWidth(45)
+        volume_label = QLabel("Vol:")
+        volume_label.setFixedWidth(20)
         self.volume_slider = QSlider(Qt.Horizontal)
         self.volume_slider.setRange(0, 100)
         self.volume_slider.setValue(50)
@@ -102,10 +102,10 @@ class VideoPlayer(QMainWindow):
         control_layout.addWidget(self.volume_value_label)
 
         # Playback speed control
-        speed_label = QLabel("Speed:")
-        speed_label.setFixedWidth(40)
+        speed_label = QLabel("X:")
+        speed_label.setFixedWidth(20)
         self.speed_combo = QComboBox()
-        self.speed_combo.setFixedWidth(50)
+        self.speed_combo.setFixedWidth(70)
         self.speed_combo.setFixedHeight(20)
         speeds = ["0.5x", "0.75x", "0.85x", "1.0x", "1.25x", "1.5x", "1.75x", "2.0x"]
         self.speed_combo.addItems(speeds)
@@ -117,9 +117,9 @@ class VideoPlayer(QMainWindow):
 
         # Time labels
         self.current_time_label = QLabel("00:00:00")
-        self.current_time_label.setFixedWidth(50)
+        self.current_time_label.setFixedWidth(70)
         self.total_time_label = QLabel("00:00:00")
-        self.total_time_label.setFixedWidth(50)
+        self.total_time_label.setFixedWidth(70)
         self.total_time_label.mousePressEvent = self.toggle_time_display
 
         control_layout.addWidget(self.current_time_label)
@@ -192,10 +192,10 @@ class VideoPlayer(QMainWindow):
             self.save_positions()
 
     def backward(self):
-        self.media_player.setPosition(max(0, self.media_player.position() - 5000))
+        self.media_player.setPosition(max(0, self.media_player.position() - 2000))
 
     def forward(self):
-        self.media_player.setPosition(min(self.media_player.duration(), self.media_player.position() + 5000))
+        self.media_player.setPosition(min(self.media_player.duration(), self.media_player.position() + 2000))
 
     def closeEvent(self, event):
         if not self.is_closing:
